@@ -1,0 +1,10 @@
+# cidr,country,city,lat,lon
+# Documentation and shared address ranges mapped to cities so the demo can
+# exercise geo rules without a licensed GeoIP database.
+198.51.100.0/24,CA,Toronto,43.6532,-79.3832
+192.0.2.0/24,US,New York,40.7128,-74.0060
+203.0.113.0/25,AU,Sydney,-33.8688,151.2093
+203.0.113.128/25,RU,Moscow,55.7558,37.6173
+100.64.0.0/16,DE,Frankfurt,50.1109,8.6821
+100.65.0.0/16,BR,Sao Paulo,-23.5505,-46.6333
+100.66.0.0/16,CN,Shanghai,31.2304,121.4737
