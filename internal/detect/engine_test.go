@@ -413,3 +413,24 @@ func TestOutOfOrderEvents(t *testing.T) {
 		t.Fatal("expected detection with out-of-order delivery")
 	}
 }
+
+func BenchmarkEngineAuthFailures(b *testing.B) {
+	rules, err := LoadDir(filepath.Join("..", "..", "rules"))
+	if err != nil {
+		b.Fatal(err)
+	}
+	e, _ := NewEngine(rules)
+	base := time.Date(2026, 3, 15, 12, 0, 0, 0, time.UTC)
+	evs := make([]event.Event, 1024)
+	for i := range evs {
+		evs[i] = event.Event{Source: "sshd", Category: event.CategoryAuth, Outcome: event.OutcomeFailure,
+			SrcIP: fmt.Sprintf("198.51.100.%d", i%250), User: fmt.Sprintf("user%d", i%40)}
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := range b.N {
+		ev := evs[i%len(evs)]
+		ev.Timestamp = base.Add(time.Duration(i) * time.Millisecond)
+		e.Process(&ev)
+	}
+}
