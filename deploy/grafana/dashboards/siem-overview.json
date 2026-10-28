@@ -1,0 +1,403 @@
+{
+  "uid": "siem-lite-overview",
+  "title": "siem-lite overview",
+  "tags": [
+    "siem",
+    "security"
+  ],
+  "timezone": "utc",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "editable": false,
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Events",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "siem-clickhouse"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "siem-clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT count() AS events FROM events WHERE $__timeFilter(timestamp)"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Detections",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "siem-clickhouse"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "siem-clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT count() AS detections FROM detections WHERE $__timeFilter(detected_at)"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Failed logins",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "siem-clickhouse"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "siem-clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT count() AS failures FROM events WHERE $__timeFilter(timestamp) AND category = 'authentication' AND outcome = 'failure'"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "High and critical",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "siem-clickhouse"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "siem-clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT count() AS high FROM detections WHERE $__timeFilter(detected_at) AND severity IN ('high','critical')"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Events by category",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "siem-clickhouse"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "siem-clickhouse"
+          },
+          "editorType": "sql",
+          "format": 0,
+          "queryType": "timeseries",
+          "rawSql": "SELECT $__timeInterval(timestamp) AS time, category, count() AS events FROM events WHERE $__timeFilter(timestamp) GROUP BY time, category ORDER BY time"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Detections by rule",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "siem-clickhouse"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "siem-clickhouse"
+          },
+          "editorType": "sql",
+          "format": 0,
+          "queryType": "timeseries",
+          "rawSql": "SELECT $__timeInterval(detected_at) AS time, rule_id, count() AS detections FROM detections WHERE $__timeFilter(detected_at) GROUP BY time, rule_id ORDER BY time"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "stacking": {
+              "mode": "normal"
+            }
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "Recent detections",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "siem-clickhouse"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 24,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "siem-clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT detected_at, severity, rule_id, group_key, count, summary FROM detections WHERE $__timeFilter(detected_at) ORDER BY detected_at DESC LIMIT 200"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "barchart",
+      "title": "Top sources of failed logins",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "siem-clickhouse"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 21,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "siem-clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT src_ip, any(country) AS country, count() AS failures FROM events WHERE $__timeFilter(timestamp) AND category = 'authentication' AND outcome = 'failure' GROUP BY src_ip ORDER BY failures DESC LIMIT 10"
+        }
+      ],
+      "options": {
+        "orientation": "horizontal",
+        "xField": "src_ip"
+      }
+    },
+    {
+      "id": 9,
+      "type": "table",
+      "title": "Top 4xx paths",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "siem-clickhouse"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 21,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "siem-clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT http_path, uniq(src_ip) AS clients, count() AS hits FROM events WHERE $__timeFilter(timestamp) AND category = 'web' AND http_status BETWEEN 400 AND 499 GROUP BY http_path ORDER BY hits DESC LIMIT 20"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "geomap",
+      "title": "Successful logins by location",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "siem-clickhouse"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 29,
+        "w": 24,
+        "h": 10
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "siem-clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT any(lat) AS latitude, any(lon) AS longitude, concat(city, ', ', country) AS place, count() AS logins FROM events WHERE $__timeFilter(timestamp) AND category = 'authentication' AND outcome = 'success' AND (lat != 0 OR lon != 0) GROUP BY city, country"
+        }
+      ],
+      "options": {
+        "view": {
+          "id": "zero",
+          "zoom": 1
+        },
+        "layers": [
+          {
+            "type": "markers",
+            "name": "logins",
+            "location": {
+              "mode": "coords",
+              "latitude": "latitude",
+              "longitude": "longitude"
+            },
+            "config": {
+              "size": {
+                "field": "logins",
+                "min": 4,
+                "max": 20,
+                "fixed": 5
+              },
+              "color": {
+                "fixed": "blue"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": []
+  }
+}
