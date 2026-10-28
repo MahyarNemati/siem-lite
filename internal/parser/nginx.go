@@ -24,7 +24,7 @@ func ParseNginx(line string) (event.Event, error) {
 	}
 	ts, err := time.Parse(nginxTimeLayout, m[3])
 	if err != nil {
-		return event.Event{}, fmt.Errorf("%w: nginx time: %v", errMalformed, err)
+		return event.Event{}, fmt.Errorf("%w: nginx time: %w", errMalformed, err)
 	}
 	status, _ := strconv.Atoi(m[5])
 	var size int64

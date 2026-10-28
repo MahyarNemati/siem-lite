@@ -37,12 +37,16 @@ func main() {
 		os.Exit(2)
 	}
 	log := newLogger(cfg)
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
-	if err := run(ctx, cfg, log); err != nil {
+	if err := runWithSignals(cfg, log); err != nil {
 		log.Error("fatal", "err", err)
 		os.Exit(1)
 	}
+}
+
+func runWithSignals(cfg config.Config, log *slog.Logger) error {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	return run(ctx, cfg, log)
 }
 
 func validateRules(args []string) int {

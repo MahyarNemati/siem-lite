@@ -291,7 +291,7 @@ func post(ctx context.Context, c *http.Client, url string, hdr http.Header, body
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
-		return fmt.Errorf("%w: %v", errPermanent, err)
+		return fmt.Errorf("%w: %w", errPermanent, err)
 	}
 	req.Header = hdr
 	resp, err := c.Do(req)

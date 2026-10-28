@@ -50,8 +50,9 @@ func main() {
 
 	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
-	if err := run(ctx, o, log); err != nil && !errors.Is(err, context.Canceled) {
+	err := run(ctx, o, log)
+	stop()
+	if err != nil && !errors.Is(err, context.Canceled) {
 		log.Error("loggen failed", "err", err)
 		os.Exit(1)
 	}

@@ -20,7 +20,7 @@ func TestRuleValidation(t *testing.T) {
 		"bad modifier":     "id: x\ntype: threshold\nthreshold: 1\nwindow: 1m\ngroup_by: [a]\nselection: {user|fuzzy: x}",
 		"bad regex":        "id: x\ntype: threshold\nthreshold: 1\nwindow: 1m\ngroup_by: [a]\nselection: {user|re: '('}",
 		"bad number":       "id: x\ntype: threshold\nthreshold: 1\nwindow: 1m\ngroup_by: [a]\nselection: {bytes|gte: lots}",
-		"unknown key":      "id: x\ntype: threshold\nthreshold: 1\nwindow: 1m\ngroup_by: [a]\nthreshhold: 2",
+		"unknown key":      "id: x\ntype: threshold\nthreshold: 1\nwindow: 1m\ngroup_by: [a]\nthreshhold: 2", //nolint:misspell // deliberate typo
 		"new_value fields": "id: x\ntype: new_value\nwindow: 1m",
 	}
 	for name, doc := range cases {

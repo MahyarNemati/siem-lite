@@ -36,7 +36,7 @@ var jsonAliases = map[string][]string{
 func ParseJSON(data []byte, now time.Time) (event.Event, error) {
 	var raw map[string]any
 	if err := json.Unmarshal(data, &raw); err != nil {
-		return event.Event{}, fmt.Errorf("%w: json: %v", errMalformed, err)
+		return event.Event{}, fmt.Errorf("%w: json: %w", errMalformed, err)
 	}
 	return FromMap(raw, now)
 }

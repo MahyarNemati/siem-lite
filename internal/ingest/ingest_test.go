@@ -3,6 +3,7 @@ package ingest
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -146,12 +147,12 @@ func TestTCPServerFraming(t *testing.T) {
 
 func TestReadFrameLimits(t *testing.T) {
 	br := bufio.NewReader(strings.NewReader(fmt.Sprintf("%d x", MaxMessageSize+1)))
-	if _, err := readFrame(br); err != errFrameTooLarge {
+	if _, err := readFrame(br); !errors.Is(err, errFrameTooLarge) {
 		t.Fatalf("got %v", err)
 	}
 	long := strings.Repeat("a", MaxMessageSize+10) + "\n"
 	br = bufio.NewReaderSize(strings.NewReader(long), 16)
-	if _, err := readFrame(br); err != errFrameTooLarge {
+	if _, err := readFrame(br); !errors.Is(err, errFrameTooLarge) {
 		t.Fatalf("got %v", err)
 	}
 	br = bufio.NewReader(strings.NewReader("12x <13>"))

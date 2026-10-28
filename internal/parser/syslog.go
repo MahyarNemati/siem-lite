@@ -70,7 +70,7 @@ func parse5424(msg SyslogMessage, s string) (SyslogMessage, error) {
 	if fields[0] != "-" {
 		ts, err := time.Parse(time.RFC3339Nano, fields[0])
 		if err != nil {
-			return msg, fmt.Errorf("%w: timestamp: %v", errMalformed, err)
+			return msg, fmt.Errorf("%w: timestamp: %w", errMalformed, err)
 		}
 		msg.Timestamp = ts
 	}
@@ -163,7 +163,7 @@ func parse3164(msg SyslogMessage, s string, now time.Time) (SyslogMessage, error
 	}
 	ts, err := time.ParseInLocation(time.Stamp, s[:stampLen], now.Location())
 	if err != nil {
-		return msg, fmt.Errorf("%w: timestamp: %v", errMalformed, err)
+		return msg, fmt.Errorf("%w: timestamp: %w", errMalformed, err)
 	}
 	ts = ts.AddDate(now.Year(), 0, 0)
 	// Messages logged in late December and read in early January belong to

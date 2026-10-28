@@ -91,7 +91,7 @@ func TestRoutes(t *testing.T) {
 		t.Fatalf("stats %v", body)
 	}
 	resp, err := http.Post(srv.URL+"/v1/ingest", "application/json", strings.NewReader("{}"))
-	if err != nil || resp.StatusCode != 202 {
+	if err != nil || resp.StatusCode != http.StatusAccepted {
 		t.Fatalf("ingest %v %v", resp, err)
 	}
 	resp.Body.Close()
