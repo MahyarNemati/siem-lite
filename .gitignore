@@ -1,0 +1,10 @@
+/bin/
+/dist/
+*.test
+*.out
+coverage.*
+.env
+/data/
+*.mmdb
+.idea/
+.vscode/
