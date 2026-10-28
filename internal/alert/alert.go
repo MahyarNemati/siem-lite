@@ -309,3 +309,11 @@ func post(ctx context.Context, c *http.Client, url string, hdr http.Header, body
 		return fmt.Errorf("%w: webhook status %d", errPermanent, resp.StatusCode)
 	}
 }
+
+// GCDedupe forgets suppression state older than maxAge.
+func (d *Dispatcher) GCDedupe(maxAge time.Duration) int {
+	if d.dedupe == nil {
+		return 0
+	}
+	return d.dedupe.GC(maxAge)
+}
