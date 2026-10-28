@@ -1,0 +1,29 @@
+id: web-scan-4xx-burst
+title: Web content discovery scan
+description: One client generating 4xx responses across many distinct paths, typical of dirbusting and vulnerability scanners.
+severity: medium
+type: distinct
+tags: [attack.reconnaissance, attack.t1595.003]
+selection:
+  category: web
+  http_status|gte: 400
+  http_status|lt: 500
+group_by: [src_ip]
+field: http_path
+threshold: 20
+window: 1m
+suppress: 15m
+---
+id: web-sensitive-path-probe
+title: Probing for sensitive files
+description: Requests for well-known secrets and admin paths.
+severity: medium
+type: threshold
+tags: [attack.reconnaissance, attack.t1595]
+selection:
+  category: web
+  http_path|contains: ["/.env", "/.git/", "/wp-login.php", "/phpmyadmin", "/server-status", "/.aws/"]
+group_by: [src_ip]
+threshold: 3
+window: 5m
+suppress: 1h

@@ -1,0 +1,46 @@
+id: auth-impossible-travel
+title: Impossible travel
+description: Two successful logins for the same user whose locations imply faster than airliner travel.
+severity: high
+type: impossible_travel
+tags: [attack.initial_access, attack.t1078]
+selection:
+  category: authentication
+  outcome: success
+group_by: [user]
+max_speed_kmh: 900
+min_distance_km: 500
+window: 24h
+suppress: 6h
+---
+id: auth-new-country
+title: Login from a new country
+description: Successful login from a country this account has not used in the last 30 days.
+severity: medium
+type: new_value
+tags: [attack.initial_access, attack.t1078]
+selection:
+  category: authentication
+  outcome: success
+  country|exists: true
+group_by: [user]
+field: country
+min_history: 3
+window: 720h
+suppress: 24h
+---
+id: auth-new-device
+title: Login from a new device
+description: Successful login from an OS/client combination not seen for this account in 30 days.
+severity: low
+type: new_value
+tags: [attack.initial_access]
+selection:
+  category: authentication
+  outcome: success
+  device|exists: true
+group_by: [user]
+field: device
+min_history: 3
+window: 720h
+suppress: 24h

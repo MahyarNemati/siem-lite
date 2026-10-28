@@ -1,0 +1,44 @@
+id: auth-bruteforce-ip
+title: Brute force from a single source IP
+description: Many failed logins from one IP in a short window.
+severity: high
+type: threshold
+tags: [attack.credential_access, attack.t1110.001]
+selection:
+  category: authentication
+  outcome: failure
+group_by: [src_ip]
+threshold: 10
+window: 5m
+suppress: 30m
+---
+id: auth-bruteforce-user
+title: Brute force against a single account
+description: Many failed logins for one user, from any number of sources.
+severity: medium
+type: threshold
+tags: [attack.credential_access, attack.t1110.001]
+selection:
+  category: authentication
+  outcome: failure
+filter:
+  user|exists: false
+group_by: [user]
+threshold: 20
+window: 10m
+suppress: 30m
+---
+id: auth-password-spray
+title: Password spray
+description: One source failing logins across many distinct accounts.
+severity: high
+type: distinct
+tags: [attack.credential_access, attack.t1110.003]
+selection:
+  category: authentication
+  outcome: failure
+group_by: [src_ip]
+field: user
+threshold: 5
+window: 10m
+suppress: 1h
