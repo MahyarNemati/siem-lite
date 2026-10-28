@@ -5,6 +5,7 @@ package pipeline
 import (
 	"context"
 	"errors"
+	"hash/fnv"
 	"log/slog"
 	"sync"
 	"time"
@@ -42,7 +43,7 @@ type Config struct {
 // Pipeline is an ingest.Handler that processes records on a worker pool.
 type Pipeline struct {
 	cfg    Config
-	in     chan ingest.Record
+	in     []chan ingest.Record
 	out    chan event.Event
 	dets   chan detect.Detection
 	closed chan struct{}
@@ -80,10 +81,13 @@ func New(cfg Config) (*Pipeline, error) {
 	}
 	p := &Pipeline{
 		cfg:    cfg,
-		in:     make(chan ingest.Record, cfg.QueueSize),
+		in:     make([]chan ingest.Record, cfg.Workers),
 		out:    make(chan event.Event, cfg.BatchSize),
 		dets:   make(chan detect.Detection, 1024),
 		closed: make(chan struct{}),
+	}
+	for i := range p.in {
+		p.in[i] = make(chan ingest.Record, max(cfg.QueueSize/cfg.Workers, 1))
 	}
 	if cfg.Metrics == nil {
 		p.cfg.Metrics = metrics.New(p.QueueDepth)
@@ -92,7 +96,25 @@ func New(cfg Config) (*Pipeline, error) {
 }
 
 // QueueDepth reports records waiting for a worker.
-func (p *Pipeline) QueueDepth() float64 { return float64(len(p.in)) }
+func (p *Pipeline) QueueDepth() float64 {
+	n := 0
+	for _, q := range p.in {
+		n += len(q)
+	}
+	return float64(n)
+}
+
+// shard pins every record from one sender to one worker so per-source order
+// survives the worker pool. Stateful rules such as new_value depend on it.
+func (p *Pipeline) shard(r ingest.Record) chan ingest.Record {
+	if len(p.in) == 1 {
+		return p.in[0]
+	}
+	h := fnv.New32a()
+	_, _ = h.Write([]byte(r.Transport))
+	_, _ = h.Write([]byte(r.Remote))
+	return p.in[h.Sum32()%uint32(len(p.in))]
+}
 
 // Handle implements ingest.Handler, blocking until there is room.
 func (p *Pipeline) Handle(ctx context.Context, r ingest.Record) error {
@@ -103,7 +125,7 @@ func (p *Pipeline) Handle(ctx context.Context, r ingest.Record) error {
 	}
 	p.cfg.Metrics.Received.WithLabelValues(r.Transport).Inc()
 	select {
-	case p.in <- r:
+	case p.shard(r) <- r:
 		return nil
 	case <-ctx.Done():
 		return ctx.Err()
@@ -121,7 +143,7 @@ func (p *Pipeline) TryHandle(r ingest.Record) bool {
 	}
 	p.cfg.Metrics.Received.WithLabelValues(r.Transport).Inc()
 	select {
-	case p.in <- r:
+	case p.shard(r) <- r:
 		return true
 	default:
 		p.cfg.Metrics.Dropped.WithLabelValues("queue_full").Inc()
@@ -133,11 +155,11 @@ func (p *Pipeline) TryHandle(r ingest.Record) bool {
 // flushes buffered events before returning.
 func (p *Pipeline) Run(ctx context.Context) {
 	var workers sync.WaitGroup
-	for range p.cfg.Workers {
+	for _, q := range p.in {
 		workers.Add(1)
 		go func() {
 			defer workers.Done()
-			p.work(ctx)
+			p.work(ctx, q)
 		}()
 	}
 	flushed := make(chan struct{})
@@ -154,15 +176,15 @@ func (p *Pipeline) Run(ctx context.Context) {
 	<-flushed
 }
 
-func (p *Pipeline) work(ctx context.Context) {
+func (p *Pipeline) work(ctx context.Context, in <-chan ingest.Record) {
 	for {
 		select {
-		case r := <-p.in:
+		case r := <-in:
 			p.process(r)
 		case <-ctx.Done():
 			for {
 				select {
-				case r := <-p.in:
+				case r := <-in:
 					p.process(r)
 				default:
 					return
@@ -197,7 +219,7 @@ func (p *Pipeline) process(r ingest.Record) {
 	p.out <- ev
 	for _, d := range ds {
 		p.cfg.Metrics.Detections.WithLabelValues(d.RuleID, d.Severity).Inc()
-		p.cfg.Logger.Info("detection", "rule", d.RuleID, "severity", d.Severity, "key", d.GroupKey, "summary", d.Summary)
+		p.cfg.Logger.Debug("detection", "rule", d.RuleID, "severity", d.Severity, "key", d.GroupKey, "summary", d.Summary)
 		if p.cfg.Alerter != nil {
 			p.cfg.Alerter.Submit(d)
 		}
