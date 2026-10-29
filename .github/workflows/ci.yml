@@ -18,7 +18,12 @@ jobs:
           go-version-file: go.mod
       - uses: golangci/golangci-lint-action@v8
         with:
-          version: v2.5
+          # Must be built with a Go at least as new as go.mod's directive:
+          # a linter built with 1.25 refuses to target 1.26 outright
+          # ("the Go language version used to build golangci-lint is lower
+          # than the targeted Go version"). Raising the module's minimum
+          # means raising this too.
+          version: v2.15
 
   test:
     runs-on: ubuntu-latest
