@@ -16,7 +16,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      - uses: golangci/golangci-lint-action@v8
+      - uses: golangci/golangci-lint-action@v9
         with:
           # Must be built with a Go at least as new as go.mod's directive:
           # a linter built with 1.25 refuses to target 1.26 outright
