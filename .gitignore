@@ -8,3 +8,6 @@ coverage.*
 *.mmdb
 .idea/
 .vscode/
+
+# macOS Finder artefact.
+.DS_Store
