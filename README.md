@@ -170,7 +170,7 @@ make bench
 
 ### Benchmarks
 
-Measured with `go test -bench . -benchmem -count 3` on a 2 vCPU Intel Xeon 2.8 GHz VM, Go 1.24.7, while the machine was shared with other builds (load average around 20). Treat them as upper bounds, not tuned figures.
+Measured with `go test -bench . -benchmem -count 3` on a 2 vCPU Intel Xeon 2.8 GHz VM, Go 1.26.7, while the machine was shared with other builds (load average around 20). Treat them as upper bounds, not tuned figures.
 
 | Benchmark | ns/op (3 runs) | B/op | allocs/op |
 | --- | --- | --- | --- |
